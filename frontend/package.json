@@ -1,0 +1,21 @@
+{
+  "name": "financeiro-frontend",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "^3.11.0",
+    "vue": "^3.4.0",
+    "vuetify": "^3.5.0",
+    "pinia": "^2.1.7",
+    "@pinia/nuxt": "^0.5.1",
+    "@mdi/font": "^7.4.47"
+  },
+  "devDependencies": {
+    "vite-plugin-vuetify": "^2.0.3",
+    "sass": "^1.71.0"
+  }
+}

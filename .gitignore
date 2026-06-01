@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+build/
+.nuxt/
+out/
+
+# .NET
+**/bin/
+**/obj/
+*.exe
+*.dll
+*.pdb
+
+# Database (seed data regenerates on first run)
+backend/financeiro.db
+backend/financeiro.db-shm
+backend/financeiro.db-wal
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env
+.env
+.env.*
+
+# Project explanation (not for repo)
+explanation.txt

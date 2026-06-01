@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protótipo — Controle Financeiro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pf-accent: #1976D2;
+      --pf-accent-rgb: 25, 118, 210;
+      --pf-green: #2E7D32;
+      --pf-green-rgb: 46, 125, 50;
+      --pf-red: #C62828;
+      --pf-red-rgb: 198, 40, 40;
+      --pf-amber: #F57F17;
+      --pf-amber-rgb: 245, 127, 23;
+      --pf-radius: 12px;
+      --pf-radius-sm: 8px;
+      --pf-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+    }
+    [data-bs-theme="dark"] {
+      --pf-accent: #64B5F6;
+      --pf-accent-rgb: 100, 181, 246;
+      --pf-green: #66BB6A;
+      --pf-green-rgb: 102, 187, 106;
+      --pf-red: #EF5350;
+      --pf-red-rgb: 239, 83, 80;
+      --pf-amber: #FFA726;
+      --pf-amber-rgb: 255, 167, 38;
+      --pf-shadow: 0 1px 3px rgba(0,0,0,.2), 0 4px 12px rgba(0,0,0,.15);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      transition: background-color .3s, color .3s;
+    }
+
+    /* Header */
+    .proto-header {
+      background: linear-gradient(135deg, rgba(var(--pf-accent-rgb), .08) 0%, rgba(var(--pf-accent-rgb), .02) 100%);
+      border-bottom: 1px solid var(--bs-border-color);
+    }
+    .proto-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 99px;
+      background: rgba(var(--pf-accent-rgb), .1);
+      color: var(--pf-accent); font-size: .75rem; font-weight: 600;
+      letter-spacing: .03em; text-transform: uppercase;
+    }
+    .theme-toggle {
+      border: 1px solid var(--bs-border-color); border-radius: .5rem;
+      padding: .35rem .75rem; background: transparent; color: var(--bs-body-color);
+      cursor: pointer; transition: all .15s;
+    }
+    .theme-toggle:hover { background: rgba(var(--pf-accent-rgb), .1); border-color: var(--pf-accent); }
+
+    /* Screen tabs */
+    .screen-tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+    .screen-tab {
+      padding: 7px 16px; border: 1px solid var(--bs-border-color);
+      border-radius: var(--pf-radius-sm); background: transparent;
+      color: var(--bs-secondary-color); cursor: pointer; font-size: .8rem;
+      font-family: inherit; font-weight: 500; transition: all .15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .screen-tab:hover { border-color: var(--pf-accent); color: var(--pf-accent); }
+    .screen-tab.active {
+      background: rgba(var(--pf-accent-rgb), .1);
+      color: var(--pf-accent); border-color: var(--pf-accent); font-weight: 600;
+    }
+
+    /* Screens */
+    .screen { display: none; animation: fadeIn .25s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* Cards */
+    .pf-card {
+      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+      border-radius: var(--pf-radius); padding: 20px;
+      box-shadow: var(--pf-shadow); transition: box-shadow .15s;
+    }
+    .pf-card:hover { box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 8px 20px rgba(0,0,0,.06); }
+    .pf-section-title {
+      font-size: .7rem; font-weight: 600; color: var(--bs-secondary-color);
+      margin: 0 0 14px; text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    /* Metric cards */
+    .metric {
+      background: var(--bs-tertiary-bg); border-radius: var(--pf-radius-sm);
+      padding: 16px 18px;
+    }
+    .metric-label { font-size: .75rem; color: var(--bs-secondary-color); margin-bottom: 4px; font-weight: 500; }
+    .metric-value { font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; }
+    .text-pf-green { color: var(--pf-green); }
+    .text-pf-red { color: var(--pf-red); }
+    .text-pf-accent { color: var(--pf-accent); }
+
+    /* Row list */
+    .pf-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 0;
+      border-bottom: 1px solid var(--bs-border-color);
+    }
+    .pf-row:last-child { border-bottom: none; }
+    .pf-dot {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; flex-shrink: 0;
+    }
+    .pf-dot.green { background: rgba(var(--pf-green-rgb), .12); color: var(--pf-green); }
+    .pf-dot.red { background: rgba(var(--pf-red-rgb), .12); color: var(--pf-red); }
+    .pf-dot.accent { background: rgba(var(--pf-accent-rgb), .12); color: var(--pf-accent); }
+    .pf-row-info { flex: 1; min-width: 0; }
+    .pf-row-title { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pf-row-sub { font-size: .75rem; color: var(--bs-secondary-color); }
+    .pf-row-val { font-size: .85rem; font-weight: 600; text-align: right; white-space: nowrap; }
+
+    /* Badges */
+    .pf-badge {
+      display: inline-block; font-size: .65rem; padding: 3px 9px;
+      border-radius: 99px; font-weight: 600; letter-spacing: .02em;
+    }
+    .pf-badge.green { background: rgba(var(--pf-green-rgb), .12); color: var(--pf-green); }
+    .pf-badge.red { background: rgba(var(--pf-red-rgb), .12); color: var(--pf-red); }
+    .pf-badge.amber { background: rgba(var(--pf-amber-rgb), .12); color: var(--pf-amber); }
+    .pf-badge.accent { background: rgba(var(--pf-accent-rgb), .12); color: var(--pf-accent); }
+
+    /* Progress bars */
+    .pf-progress { background: var(--bs-tertiary-bg); border-radius: 99px; height: 8px; overflow: hidden; }
+    .pf-progress-fill { height: 100%; border-radius: 99px; transition: width .4s ease; }
+
+    /* Budget cards */
+    .budget-card { position: relative; }
+    .budget-icon {
+      width: 40px; height: 40px; border-radius: var(--pf-radius-sm);
+      display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+    }
+    .budget-icon.green { background: rgba(var(--pf-green-rgb), .12); color: var(--pf-green); }
+    .budget-icon.red { background: rgba(var(--pf-red-rgb), .12); color: var(--pf-red); }
+    .budget-icon.accent { background: rgba(var(--pf-accent-rgb), .12); color: var(--pf-accent); }
+
+    /* Account cards */
+    .account-card {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .account-icon {
+      width: 48px; height: 48px; border-radius: var(--pf-radius-sm);
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;
+    }
+    .account-icon.accent { background: rgba(var(--pf-accent-rgb), .12); color: var(--pf-accent); }
+    .account-icon.red { background: rgba(var(--pf-red-rgb), .12); color: var(--pf-red); }
+    .account-icon.green { background: rgba(var(--pf-green-rgb), .12); color: var(--pf-green); }
+
+    /* Form */
+    .pf-input {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--bs-border-color);
+      border-radius: var(--pf-radius-sm); background: var(--bs-body-bg);
+      color: var(--bs-body-color); font-size: .875rem; font-family: inherit;
+      transition: border-color .15s;
+    }
+    .pf-input:focus { outline: none; border-color: var(--pf-accent); box-shadow: 0 0 0 3px rgba(var(--pf-accent-rgb), .15); }
+    .pf-input::placeholder { color: var(--bs-secondary-color); }
+    .pf-label { font-size: .75rem; color: var(--bs-secondary-color); margin-bottom: 5px; display: block; font-weight: 500; }
+    .pf-btn-primary {
+      background: var(--pf-accent); color: #fff; border: none;
+      padding: 11px 20px; border-radius: var(--pf-radius-sm); font-size: .875rem;
+      font-weight: 600; cursor: pointer; width: 100%; font-family: inherit;
+      transition: opacity .15s;
+    }
+    .pf-btn-primary:hover { opacity: .88; }
+    .type-toggle { display: flex; gap: 6px; }
+    .type-btn {
+      flex: 1; padding: 9px; border-radius: var(--pf-radius-sm);
+      border: 1px solid var(--bs-border-color); background: transparent;
+      color: var(--bs-secondary-color); cursor: pointer; font-weight: 500;
+      font-size: .8rem; font-family: inherit; transition: all .15s;
+    }
+    .type-btn.active { border-color: transparent; }
+    .type-btn.active.expense { background: rgba(var(--pf-red-rgb), .1); color: var(--pf-red); }
+    .type-btn.active.income { background: rgba(var(--pf-green-rgb), .1); color: var(--pf-green); }
+    .type-btn.active.transfer { background: rgba(var(--pf-accent-rgb), .1); color: var(--pf-accent); }
+
+    /* Search/filter bar */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-bar .pf-input { flex: 1; min-width: 140px; }
+    .filter-bar select { width: auto; }
+
+    /* Chart placeholder */
+    .chart-area { width: 100%; }
+
+    /* New budget dashed card */
+    .budget-new {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer; border-style: dashed; min-height: 120px;
+    }
+    .budget-new i { font-size: 1.5rem; color: var(--bs-secondary-color); }
+    .budget-new span { font-size: .8rem; color: var(--bs-secondary-color); font-weight: 500; }
+
+    /* Screen label */
+    .screen-label {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+    .screen-label h5 { margin: 0; font-weight: 700; }
+
+    /* Device frame */
+    .device-frame {
+      max-width: 860px; margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top Header -->
+<div class="proto-header py-4 mb-4">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <span class="proto-badge mb-2"><i class="bi bi-phone"></i> Protótipo</span>
+        <h4 class="mb-1 fw-semibold">Controle Financeiro</h4>
+        <p class="text-secondary mb-0 small">Esboço de telas — interface do usuário</p>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar tema">
+        <i class="bi bi-circle-half" id="themeIcon"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="device-frame">
+
+    <!-- Screen Tabs -->
+    <div class="screen-tabs">
+      <button class="screen-tab active" data-screen="dashboard"><i class="bi bi-grid"></i> Dashboard</button>
+      <button class="screen-tab" data-screen="transacoes"><i class="bi bi-list-ul"></i> Transações</button>
+      <button class="screen-tab" data-screen="nova"><i class="bi bi-plus-circle"></i> Nova Transação</button>
+      <button class="screen-tab" data-screen="orcamentos"><i class="bi bi-bullseye"></i> Orçamentos</button>
+      <button class="screen-tab" data-screen="contas"><i class="bi bi-credit-card"></i> Contas</button>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="screen active" id="screen-dashboard">
+      <!-- Metrics -->
+      <div class="row g-3 mb-4">
+        <div class="col-4">
+          <div class="metric">
+            <div class="metric-label">Saldo total</div>
+            <div class="metric-value text-pf-accent">R$ 8.420</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric">
+            <div class="metric-label">Receitas (mês)</div>
+            <div class="metric-value text-pf-green">R$ 6.800</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="metric">
+            <div class="metric-label">Despesas (mês)</div>
+            <div class="metric-value text-pf-red">R$ 4.130</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <!-- Flow Chart -->
+        <div class="col-md-6">
+          <div class="pf-card">
+            <div class="pf-section-title">Fluxo mensal</div>
+            <svg class="chart-area" viewBox="0 0 280 120" width="100%">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--pf-accent)" stop-opacity=".15"/>
+                  <stop offset="100%" stop-color="var(--pf-accent)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <polyline points="10,90 50,70 90,80 130,40 170,55 210,30 250,20" fill="none" stroke="var(--pf-accent)" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="10,90 50,70 90,80 130,40 170,55 210,30 250,20 250,115 10,115" fill="url(#areaGrad)"/>
+              <line x1="10" y1="110" x2="250" y2="110" stroke="var(--bs-border-color)" stroke-width=".5"/>
+              <text x="10" y="118" font-size="10" fill="var(--bs-secondary-color)">Jan</text>
+              <text x="88" y="118" font-size="10" fill="var(--bs-secondary-color)">Mar</text>
+              <text x="168" y="118" font-size="10" fill="var(--bs-secondary-color)">Mai</text>
+              <text x="240" y="118" font-size="10" fill="var(--bs-secondary-color)">Jun</text>
+            </svg>
+          </div>
+        </div>
+        <!-- Category Spending -->
+        <div class="col-md-6">
+          <div class="pf-card">
+            <div class="pf-section-title">Gastos por categoria</div>
+            <div class="pf-row" style="padding:8px 0">
+              <div class="pf-dot red"><i class="bi bi-house"></i></div>
+              <div class="pf-row-info">
+                <div class="pf-row-title">Moradia</div>
+                <div class="pf-progress" style="margin-top:4px"><div class="pf-progress-fill" style="width:72%;background:var(--pf-red)"></div></div>
+              </div>
+              <div class="pf-row-val text-pf-red">R$ 1.800</div>
+            </div>
+            <div class="pf-row" style="padding:8px 0">
+              <div class="pf-dot green"><i class="bi bi-cart3"></i></div>
+              <div class="pf-row-info">
+                <div class="pf-row-title">Alimentação</div>
+                <div class="pf-progress" style="margin-top:4px"><div class="pf-progress-fill" style="width:48%;background:var(--pf-green)"></div></div>
+              </div>
+              <div class="pf-row-val text-pf-green">R$ 950</div>
+            </div>
+            <div class="pf-row" style="padding:8px 0">
+              <div class="pf-dot accent"><i class="bi bi-car-front"></i></div>
+              <div class="pf-row-info">
+                <div class="pf-row-title">Transporte</div>
+                <div class="pf-progress" style="margin-top:4px"><div class="pf-progress-fill" style="width:30%;background:var(--pf-accent)"></div></div>
+              </div>
+              <div class="pf-row-val text-pf-accent">R$ 580</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Last Transactions -->
+      <div class="pf-card">
+        <div class="pf-section-title">Últimas transações</div>
+        <div class="pf-row">
+          <div class="pf-dot green"><i class="bi bi-arrow-down"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Salário</div><div class="pf-row-sub">01/06/2025 · Conta Corrente</div></div>
+          <div class="pf-row-val text-pf-green">+ R$ 6.800</div>
+        </div>
+        <div class="pf-row">
+          <div class="pf-dot red"><i class="bi bi-arrow-up"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Aluguel</div><div class="pf-row-sub">05/06/2025 · Conta Corrente</div></div>
+          <div class="pf-row-val text-pf-red">- R$ 1.800</div>
+        </div>
+        <div class="pf-row">
+          <div class="pf-dot red"><i class="bi bi-arrow-up"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Mercado</div><div class="pf-row-sub">08/06/2025 · Cartão de Crédito</div></div>
+          <div class="pf-row-val text-pf-red">- R$ 320</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRANSAÇÕES ===== -->
+    <div class="screen" id="screen-transacoes">
+      <div class="screen-label">
+        <h5><i class="bi bi-list-ul me-2" style="color:var(--pf-accent)"></i>Transações</h5>
+      </div>
+      <div class="filter-bar">
+        <input class="pf-input" placeholder="Buscar transação...">
+        <select class="pf-input" style="width:auto"><option>Todas</option><option>Receitas</option><option>Despesas</option></select>
+        <select class="pf-input" style="width:auto"><option>Junho 2025</option><option>Maio 2025</option></select>
+      </div>
+      <div class="pf-card">
+        <div class="pf-row">
+          <div class="pf-dot green"><i class="bi bi-arrow-down"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Salário</div><div class="pf-row-sub">01/06 · Trabalho</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="pf-badge green">Receita</span><div class="pf-row-val text-pf-green">+ R$ 6.800</div></div>
+        </div>
+        <div class="pf-row">
+          <div class="pf-dot red"><i class="bi bi-arrow-up"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Aluguel</div><div class="pf-row-sub">05/06 · Moradia</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="pf-badge red">Despesa</span><div class="pf-row-val text-pf-red">- R$ 1.800</div></div>
+        </div>
+        <div class="pf-row">
+          <div class="pf-dot red"><i class="bi bi-arrow-up"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Mercado Extra</div><div class="pf-row-sub">08/06 · Alimentação</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="pf-badge red">Despesa</span><div class="pf-row-val text-pf-red">- R$ 320</div></div>
+        </div>
+        <div class="pf-row">
+          <div class="pf-dot green"><i class="bi bi-arrow-down"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Freela design</div><div class="pf-row-sub">10/06 · Trabalho extra</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="pf-badge green">Receita</span><div class="pf-row-val text-pf-green">+ R$ 800</div></div>
+        </div>
+        <div class="pf-row">
+          <div class="pf-dot red"><i class="bi bi-arrow-up"></i></div>
+          <div class="pf-row-info"><div class="pf-row-title">Gasolina</div><div class="pf-row-sub">12/06 · Transporte</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="pf-badge red">Despesa</span><div class="pf-row-val text-pf-red">- R$ 180</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NOVA TRANSAÇÃO ===== -->
+    <div class="screen" id="screen-nova">
+      <div class="screen-label">
+        <h5><i class="bi bi-plus-circle me-2" style="color:var(--pf-green)"></i>Nova Transação</h5>
+      </div>
+      <div class="pf-card" style="max-width:480px">
+        <div class="type-toggle mb-4">
+          <button class="type-btn active expense" onclick="setType(this,'expense')">Despesa</button>
+          <button class="type-btn" onclick="setType(this,'income')">Receita</button>
+          <button class="type-btn" onclick="setType(this,'transfer')">Transferência</button>
+        </div>
+        <div class="mb-3">
+          <label class="pf-label">Valor</label>
+          <input class="pf-input" type="number" placeholder="R$ 0,00">
+        </div>
+        <div class="mb-3">
+          <label class="pf-label">Descrição</label>
+          <input class="pf-input" type="text" placeholder="Ex: Mercado, Aluguel...">
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="pf-label">Categoria</label>
+            <select class="pf-input"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Lazer</option></select>
+          </div>
+          <div class="col-6">
+            <label class="pf-label">Conta</label>
+            <select class="pf-input"><option>Conta Corrente</option><option>Cartão de Crédito</option><option>Poupança</option></select>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="pf-label">Data</label>
+          <input class="pf-input" type="date" value="2025-06-13">
+        </div>
+        <button class="pf-btn-primary">Salvar transação</button>
+      </div>
+    </div>
+
+    <!-- ===== ORÇAMENTOS ===== -->
+    <div class="screen" id="screen-orcamentos">
+      <div class="screen-label">
+        <h5><i class="bi bi-bullseye me-2" style="color:var(--pf-red)"></i>Orçamentos</h5>
+        <span class="text-secondary ms-2" style="font-size:.85rem">Junho 2025</span>
+      </div>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="pf-card budget-card">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="budget-icon red"><i class="bi bi-house"></i></div>
+              <div>
+                <div style="font-weight:600;font-size:.85rem">Moradia</div>
+                <div style="font-size:.7rem;color:var(--bs-secondary-color)">Junho 2025</div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between mb-2" style="font-size:.78rem">
+              <span class="text-secondary">R$ 1.800 / R$ 2.000</span>
+              <span class="text-pf-red fw-semibold">90%</span>
+            </div>
+            <div class="pf-progress mb-2"><div class="pf-progress-fill" style="width:90%;background:var(--pf-red)"></div></div>
+            <div style="font-size:.7rem;color:var(--bs-secondary-color)">Faltam R$ 200</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="pf-card budget-card">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="budget-icon green"><i class="bi bi-cart3"></i></div>
+              <div>
+                <div style="font-weight:600;font-size:.85rem">Alimentação</div>
+                <div style="font-size:.7rem;color:var(--bs-secondary-color)">Junho 2025</div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between mb-2" style="font-size:.78rem">
+              <span class="text-secondary">R$ 950 / R$ 1.500</span>
+              <span class="text-pf-green fw-semibold">63%</span>
+            </div>
+            <div class="pf-progress mb-2"><div class="pf-progress-fill" style="width:63%;background:var(--pf-green)"></div></div>
+            <div style="font-size:.7rem;color:var(--bs-secondary-color)">Faltam R$ 550</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="pf-card budget-card">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="budget-icon accent"><i class="bi bi-car-front"></i></div>
+              <div>
+                <div style="font-weight:600;font-size:.85rem">Transporte</div>
+                <div style="font-size:.7rem;color:var(--bs-secondary-color)">Junho 2025</div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between mb-2" style="font-size:.78rem">
+              <span class="text-secondary">R$ 580 / R$ 800</span>
+              <span class="text-pf-amber fw-semibold">73%</span>
+            </div>
+            <div class="pf-progress mb-2"><div class="pf-progress-fill" style="width:73%;background:var(--pf-amber)"></div></div>
+            <div style="font-size:.7rem;color:var(--bs-secondary-color)">Faltam R$ 220</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="pf-card budget-new">
+            <i class="bi bi-plus-lg"></i>
+            <span>Novo orçamento</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONTAS ===== -->
+    <div class="screen" id="screen-contas">
+      <div class="screen-label">
+        <h5><i class="bi bi-credit-card me-2" style="color:var(--pf-accent)"></i>Contas</h5>
+        <div class="ms-auto">
+          <span style="font-size:.75rem;color:var(--bs-secondary-color)">Saldo total</span>
+          <div style="font-size:1.2rem;font-weight:700" class="text-pf-green">R$ 8.420</div>
+        </div>
+      </div>
+      <div class="d-flex flex-column gap-3">
+        <div class="pf-card account-card">
+          <div class="account-icon accent"><i class="bi bi-building-bank"></i></div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:.9rem">Conta Corrente</div>
+            <div style="font-size:.75rem;color:var(--bs-secondary-color)">Banco do Brasil · Corrente</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.1rem;font-weight:700" class="text-pf-green">R$ 5.920</div>
+            <span class="pf-badge green">Ativa</span>
+          </div>
+        </div>
+        <div class="pf-card account-card">
+          <div class="account-icon red"><i class="bi bi-credit-card-2-back"></i></div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:.9rem">Cartão de Crédito</div>
+            <div style="font-size:.75rem;color:var(--bs-secondary-color)">Nubank · Crédito</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.1rem;font-weight:700" class="text-pf-red">- R$ 1.300</div>
+            <span class="pf-badge amber">Fatura aberta</span>
+          </div>
+        </div>
+        <div class="pf-card account-card">
+          <div class="account-icon green"><i class="bi bi-piggy-bank"></i></div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:.9rem">Poupança</div>
+            <div style="font-size:.75rem;color:var(--bs-secondary-color)">Caixa Econômica · Poupança</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.1rem;font-weight:700" class="text-pf-green">R$ 3.800</div>
+            <span class="pf-badge green">Ativa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /device-frame -->
+</div>
+
+<script>
+  // Screen switching
+  document.querySelectorAll('.screen-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.screen-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
+    });
+  });
+
+  // Type toggle (nova transação)
+  function setType(el, type) {
+    document.querySelectorAll('.type-btn').forEach(b => {
+      b.classList.remove('active', 'expense', 'income', 'transfer');
+    });
+    el.classList.add('active', type);
+  }
+
+  // Theme toggle
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.dataset.bsTheme === 'dark';
+    html.dataset.bsTheme = isDark ? 'light' : 'dark';
+    document.getElementById('themeIcon').className = isDark ? 'bi bi-circle-half' : 'bi bi-moon-stars';
+    localStorage.setItem('theme', html.dataset.bsTheme);
+  }
+
+  // Restore saved theme
+  const saved = localStorage.getItem('theme');
+  if (saved) {
+    document.documentElement.dataset.bsTheme = saved;
+    document.getElementById('themeIcon').className = saved === 'dark' ? 'bi bi-moon-stars' : 'bi bi-circle-half';
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.dataset.bsTheme = 'dark';
+    document.getElementById('themeIcon').className = 'bi bi-moon-stars';
+  }
+</script>
+</body>
+</html>
