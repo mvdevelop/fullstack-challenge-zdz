@@ -10,7 +10,7 @@
                   <v-avatar color="primary" size="56" class="mb-3">
                     <v-icon icon="mdi-wallet" size="28" color="white" />
                   </v-avatar>
-                  <h5 class="font-weight-bold mb-1">FinanceiroApp</h5>
+                  <h5 class="font-weight-bold mb-1">Controle Financeiro</h5>
                   <p class="text-medium-emphasis text-body-2 mb-0">Controle suas finanças de forma simples</p>
                 </div>
 
@@ -58,14 +58,14 @@ const registerForm = reactive({ nome: '', email: '', senha: '' })
 
 async function fazerLogin() {
   loading.value = true; erro.value = ''
-  try { await auth.login(loginForm.email, loginForm.senha); router.push('/') }
+  try { await auth.login(loginForm.email, loginForm.senha); router.push('/dashboard') }
   catch (e: any) { erro.value = e.message || 'Erro ao fazer login' }
   finally { loading.value = false }
 }
 
 async function fazerRegistro() {
   loading.value = true; erro.value = ''
-  try { await auth.register(registerForm.nome, registerForm.email, registerForm.senha); router.push('/') }
+  try { await auth.register(registerForm.nome, registerForm.email, registerForm.senha); router.push('/dashboard') }
   catch (e: any) { erro.value = e.message || 'Erro ao criar conta' }
   finally { loading.value = false }
 }

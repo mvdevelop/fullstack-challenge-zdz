@@ -1,48 +1,33 @@
 <template>
   <div>
-    <div class="d-flex align-center justify-space-between mb-4">
-      <div>
+    <!-- Header: título + saldo total à direita -->
+    <div class="pf-page-header">
+      <v-icon icon="mdi-credit-card" size="20" color="primary" />
+      <h5>Contas</h5>
+      <div class="ms-auto text-right">
         <div class="text-caption text-medium-emphasis font-weight-medium">Saldo total</div>
-        <div class="text-h4 font-weight-bold" :class="saldoTotal >= 0 ? 'text-success' : 'text-error'">
-          {{ formatarValor(saldoTotal) }}
-        </div>
+        <div class="text-h5 font-weight-bold text-pf-green">{{ formatarValor(saldoTotal) }}</div>
       </div>
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="abrirDialog()">Nova conta</v-btn>
     </div>
 
-    <v-row>
-      <v-col v-for="conta in contas" :key="conta.id" cols="12" sm="6" md="4">
-        <v-card rounded="lg" :opacity="conta.ativa ? 1 : 0.5">
-          <v-card-text>
-            <div class="d-flex align-center gap-3 mb-3">
-              <v-avatar :color="corTipo(conta.tipo)" variant="tonal" size="44" rounded="lg">
-                <v-icon :icon="iconeTipo(conta.tipo)" size="22" />
-              </v-avatar>
-              <div>
-                <div class="font-weight-medium">{{ conta.nome }}</div>
-                <div class="text-caption text-medium-emphasis">{{ conta.tipo }} · {{ conta.moeda }}</div>
-              </div>
-              <v-spacer />
-              <v-menu>
-                <template #activator="{ props }">
-                  <v-btn icon="mdi-dots-vertical" size="small" variant="text" v-bind="props" />
-                </template>
-                <v-list density="compact">
-                  <v-list-item prepend-icon="mdi-pencil" title="Editar" @click="abrirDialog(conta)" />
-                  <v-list-item prepend-icon="mdi-delete" title="Desativar" @click="excluir(conta.id)" />
-                </v-list>
-              </v-menu>
-            </div>
-            <div class="text-h5 font-weight-bold" :class="conta.saldoAtual >= 0 ? 'text-success' : 'text-error'">
-              {{ formatarValor(conta.saldoAtual) }}
-            </div>
-            <div class="text-caption text-medium-emphasis mt-1">
-              Saldo inicial: {{ formatarValor(conta.saldoInicial) }}
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <!-- Lista de contas -->
+    <div class="d-flex flex-column ga-3">
+      <div v-for="conta in contas" :key="conta.id" class="pf-card pf-account-card" :opacity="conta.ativa ? 1 : 0.5" style="cursor:pointer" @click="abrirDialog(conta)">
+        <div class="pf-account-icon" :class="corConta(conta.tipo)">
+          <v-icon :icon="iconeTipo(conta.tipo)" size="22" />
+        </div>
+        <div class="flex-1 min-width-0">
+          <div class="font-weight-medium" style="font-size:.9rem">{{ conta.nome }}</div>
+          <div class="text-caption text-medium-emphasis">{{ conta.tipo }} · {{ conta.moeda }}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-weight-bold" style="font-size:1.1rem" :class="conta.saldoAtual >= 0 ? 'text-pf-green' : 'text-pf-red'">
+            {{ formatarValor(conta.saldoAtual) }}
+          </div>
+          <span class="pf-badge" :class="badgeStatus(conta)">{{ textoStatus(conta) }}</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Dialog criar/editar -->
     <v-dialog v-model="dialog" max-width="440" persistent>
@@ -93,12 +78,24 @@ function formatarValor(v: number) {
   return `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
 }
 
-function corTipo(tipo: string) {
-  return { Corrente: 'primary', Poupanca: 'success', Cartao: 'error', Investimento: 'warning', Outro: 'secondary' }[tipo] ?? 'primary'
+function corConta(tipo: string) {
+  return { Corrente: 'accent', Poupanca: 'green', Cartao: 'red', Investimento: 'accent', Outro: 'accent' }[tipo] ?? 'accent'
 }
 
 function iconeTipo(tipo: string) {
   return { Corrente: 'mdi-bank', Poupanca: 'mdi-piggy-bank', Cartao: 'mdi-credit-card', Investimento: 'mdi-chart-line', Outro: 'mdi-wallet' }[tipo] ?? 'mdi-wallet'
+}
+
+function badgeStatus(conta: Conta) {
+  if (!conta.ativa) return 'red'
+  if (conta.tipo === 'Cartao') return 'amber'
+  return 'green'
+}
+
+function textoStatus(conta: Conta) {
+  if (!conta.ativa) return 'Inativa'
+  if (conta.tipo === 'Cartao') return 'Fatura aberta'
+  return 'Ativa'
 }
 
 function abrirDialog(conta?: Conta) {

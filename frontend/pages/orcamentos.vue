@@ -1,69 +1,61 @@
 <template>
   <div>
-    <div class="d-flex align-center justify-space-between mb-4">
-      <div class="d-flex align-center gap-3">
-        <v-btn icon="mdi-chevron-left" variant="text" @click="mudarMes(-1)" />
-        <span class="text-h6 font-weight-medium">{{ mesFormatado }}</span>
-        <v-btn icon="mdi-chevron-right" variant="text" @click="mudarMes(1)" />
-      </div>
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="dialog = true">
-        Novo orçamento
-      </v-btn>
+    <!-- Header -->
+    <div class="pf-page-header">
+      <v-icon icon="mdi-target" size="20" color="error" />
+      <h5>Orçamentos</h5>
+      <v-btn icon="mdi-chevron-left" size="small" variant="text" @click="mudarMes(-1)" />
+      <span class="text-medium-emphasis" style="font-size:.85rem">{{ mesFormatado }}</span>
+      <v-btn icon="mdi-chevron-right" size="small" variant="text" @click="mudarMes(1)" />
     </div>
 
-    <!-- Cards de orçamento -->
-    <v-row v-if="!loading && orcamentos.length > 0">
-      <v-col v-for="orc in orcamentos" :key="orc.id" cols="12" sm="6" md="4">
-        <v-card rounded="lg">
-          <v-card-text>
-            <div class="d-flex align-center justify-space-between mb-3">
-              <div class="d-flex align-center gap-2">
-                <v-avatar :color="orc.categoria?.cor || 'primary'" size="36" variant="tonal">
-                  <v-icon :icon="orc.categoria?.icone || 'mdi-tag'" size="18" />
-                </v-avatar>
-                <span class="font-weight-medium">{{ orc.categoria?.nome }}</span>
-              </div>
-              <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="excluir(orc.id)" />
-            </div>
+    <!-- Loading -->
+    <div v-if="loading" class="d-flex justify-center py-10">
+      <v-progress-circular indeterminate color="primary" />
+    </div>
 
-            <div class="d-flex justify-space-between text-body-2 mb-2">
-              <span class="text-medium-emphasis">Gasto</span>
-              <span class="font-weight-medium">
-                {{ formatarValor(orc.valorGasto) }}
-                <span class="text-medium-emphasis">/ {{ formatarValor(orc.valorLimite) }}</span>
-              </span>
+    <!-- Grid de orçamentos -->
+    <v-row v-else>
+      <v-col v-for="orc in orcamentos" :key="orc.id" cols="12" sm="6">
+        <div class="pf-card budget-card">
+          <div class="d-flex align-center ga-3 mb-3">
+            <div class="pf-budget-icon" :class="corIcone(orc.percentualUsado)">
+              <v-icon :icon="orc.categoria?.icone || 'mdi-tag'" size="18" />
             </div>
-
-            <v-progress-linear
-              :model-value="orc.percentualUsado"
-              :color="corProgresso(orc.percentualUsado)"
-              bg-color="surface-variant"
-              rounded
-              height="8"
-              class="mb-2"
-            />
-
-            <div class="d-flex justify-space-between text-caption text-medium-emphasis">
-              <span>{{ Math.round(orc.percentualUsado) }}% utilizado</span>
-              <span :class="orc.percentualUsado >= 100 ? 'text-error' : 'text-success'">
-                {{ orc.percentualUsado >= 100 ? 'Excedeu' : 'Disponível' }}
-                {{ formatarValor(Math.abs(orc.valorLimite - orc.valorGasto)) }}
-              </span>
+            <div>
+              <div class="font-weight-medium" style="font-size:.85rem">{{ orc.categoria?.nome }}</div>
+              <div class="text-caption text-medium-emphasis">{{ mesFormatado }}</div>
             </div>
-          </v-card-text>
-        </v-card>
+          </div>
+
+          <div class="d-flex justify-space-between mb-2" style="font-size:.78rem">
+            <span class="text-medium-emphasis">{{ formatarValor(orc.valorGasto) }} / {{ formatarValor(orc.valorLimite) }}</span>
+            <span class="font-weight-semibold" :class="corPercentual(orc.percentualUsado)">{{ Math.round(orc.percentualUsado) }}%</span>
+          </div>
+
+          <div class="pf-progress mb-2">
+            <div class="pf-progress-fill" :style="{ width: Math.min(orc.percentualUsado, 100) + '%', background: corBarra(orc.percentualUsado) }" />
+          </div>
+
+          <div class="text-caption text-medium-emphasis">
+            Faltam {{ formatarValor(Math.max(orc.valorLimite - orc.valorGasto, 0)) }}
+          </div>
+        </div>
+      </v-col>
+
+      <!-- Card "Novo orçamento" -->
+      <v-col cols="12" sm="6">
+        <div class="pf-budget-new" @click="dialog = true">
+          <v-icon icon="mdi-plus" size="24" class="text-medium-emphasis" />
+          <span class="text-medium-emphasis font-weight-medium">Novo orçamento</span>
+        </div>
+      </v-col>
+
+      <!-- Estado vazio -->
+      <v-col v-if="orcamentos.length === 0" cols="12" class="text-center text-medium-emphasis py-6">
+        Nenhum orçamento para este mês. Crie o primeiro!
       </v-col>
     </v-row>
-
-    <v-card v-else-if="!loading" rounded="lg" class="py-10 text-center">
-      <v-icon icon="mdi-target" size="48" class="mb-3 text-medium-emphasis" />
-      <p class="text-medium-emphasis">Nenhum orçamento para este mês</p>
-      <v-btn color="primary" variant="tonal" class="mt-3" @click="dialog = true">
-        Criar primeiro orçamento
-      </v-btn>
-    </v-card>
-
-    <v-progress-circular v-else indeterminate color="primary" class="d-block mx-auto mt-10" />
 
     <!-- Dialog novo orçamento -->
     <v-dialog v-model="dialog" max-width="440" persistent>
@@ -140,10 +132,22 @@ function mudarMes(delta: number) {
   buscar()
 }
 
-function corProgresso(p: number) {
-  if (p >= 100) return 'error'
-  if (p >= 80) return 'warning'
-  return 'success'
+function corIcone(p: number) {
+  if (p >= 100) return 'red'
+  if (p >= 80) return 'amber'
+  return 'green'
+}
+
+function corPercentual(p: number) {
+  if (p >= 100) return 'text-pf-red'
+  if (p >= 80) return 'text-pf-amber'
+  return 'text-pf-green'
+}
+
+function corBarra(p: number) {
+  if (p >= 100) return 'var(--pf-red)'
+  if (p >= 80) return 'var(--pf-amber)'
+  return 'var(--pf-green)'
 }
 
 function formatarValor(v: number) {

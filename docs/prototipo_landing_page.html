@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protótipo — Landing Page Controle Financeiro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pf-accent: #1976D2;
+      --pf-accent-rgb: 25, 118, 210;
+      --pf-green: #2E7D32;
+      --pf-green-rgb: 46, 125, 50;
+      --pf-red: #C62828;
+      --pf-red-rgb: 198, 40, 40;
+      --pf-radius: 12px;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background: #F5F5F5;
+    }
+
+    /* Hero */
+    .lp-hero {
+      padding: 80px 0 60px;
+      background: linear-gradient(135deg, rgba(var(--pf-accent-rgb), .06) 0%, rgba(var(--pf-accent-rgb), .01) 100%);
+    }
+    .lp-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 99px;
+      background: rgba(var(--pf-accent-rgb), .1);
+      color: var(--pf-accent); font-size: .75rem; font-weight: 600;
+      letter-spacing: .03em; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .lp-title {
+      font-size: 2.8rem; font-weight: 700; line-height: 1.15;
+      letter-spacing: -.03em; margin: 0 0 16px;
+    }
+    .lp-title span { color: var(--pf-accent); }
+    .lp-subtitle {
+      font-size: 1.1rem; line-height: 1.6; color: var(--bs-secondary-color);
+      margin: 0 0 32px; max-width: 440px;
+    }
+    .lp-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .lp-btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 10px; font-size: .95rem; font-weight: 600;
+      text-decoration: none; background: var(--pf-accent); color: #fff; border: none;
+      transition: all .15s; cursor: pointer;
+    }
+    .lp-btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .lp-btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 10px; font-size: .95rem; font-weight: 600;
+      text-decoration: none; background: transparent; color: var(--pf-accent);
+      border: 1px solid var(--pf-accent); transition: all .15s; cursor: pointer;
+    }
+    .lp-btn-secondary:hover { background: rgba(var(--pf-accent-rgb), .06); }
+
+    /* Mockup */
+    .lp-mockup {
+      background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 16px;
+      padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.06); width: 320px; margin-top: 24px;
+    }
+    .lp-mockup-card {
+      background: rgba(0,0,0,.02); border-radius: 10px; padding: 14px; margin-bottom: 14px;
+    }
+    .lp-mockup-row {
+      display: flex; align-items: center; gap: 10px; padding: 8px 0;
+      border-bottom: 1px solid rgba(0,0,0,.05);
+    }
+    .lp-mockup-row:last-child { border-bottom: none; }
+    .lp-mockup-dot {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    }
+    .lp-mockup-dot.green { background: rgba(var(--pf-green-rgb), .12); }
+    .lp-mockup-dot.red { background: rgba(var(--pf-red-rgb), .12); }
+    .lp-mockup-dot.accent { background: rgba(var(--pf-accent-rgb), .12); }
+    .lp-mockup-line {
+      height: 8px; border-radius: 4px; background: rgba(0,0,0,.08); flex: 1;
+    }
+    .lp-mockup-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .lp-mockup-metric {
+      background: rgba(0,0,0,.03); border-radius: 8px; padding: 10px; text-align: center;
+    }
+    .lp-mockup-label {
+      display: block; font-size: .6rem; color: var(--bs-secondary-color);
+      margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .lp-mockup-value { display: block; font-size: .8rem; font-weight: 700; }
+    .text-pf-green { color: var(--pf-green); }
+    .text-pf-red { color: var(--pf-red); }
+    .text-pf-accent { color: var(--pf-accent); }
+
+    /* Features */
+    .lp-features { padding: 80px 0; }
+    .lp-section-title {
+      font-size: 1.8rem; font-weight: 700; text-align: center;
+      margin: 0 0 48px; letter-spacing: -.02em;
+    }
+    .lp-feature-card {
+      background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 14px;
+      padding: 24px 20px; text-align: center; height: 100%;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .lp-feature-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04);
+      transform: translateY(-2px);
+    }
+    .lp-feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(var(--pf-accent-rgb), .1); color: var(--pf-accent);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px; font-size: 1.25rem;
+    }
+    .lp-feature-card h3 { font-size: .95rem; font-weight: 600; margin: 0 0 8px; }
+    .lp-feature-card p { font-size: .82rem; line-height: 1.5; color: var(--bs-secondary-color); margin: 0; }
+
+    /* CTA */
+    .lp-cta {
+      padding: 60px 0 80px; text-align: center;
+      background: linear-gradient(135deg, rgba(var(--pf-accent-rgb), .04) 0%, rgba(var(--pf-accent-rgb), .01) 100%);
+    }
+    .lp-cta h2 { font-size: 1.6rem; font-weight: 700; margin: 0 0 12px; }
+    .lp-cta p { font-size: 1rem; color: var(--bs-secondary-color); margin: 0 0 24px; }
+
+    /* Footer */
+    .lp-footer {
+      padding: 20px 0; border-top: 1px solid rgba(0,0,0,.06);
+    }
+    .lp-footer .container {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="lp-hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <span class="lp-badge"><i class="bi bi-wallet2"></i> Controle Financeiro</span>
+        <h1 class="lp-title">Suas finanças sob <span>controle</span></h1>
+        <p class="lp-subtitle">Gerencie receitas, despesas, orçamentos e contas bancárias em um só lugar. Simples, rápido e visual.</p>
+        <div class="lp-actions">
+          <a href="#login" class="lp-btn-primary">Começar agora <i class="bi bi-arrow-right"></i></a>
+          <a href="#features" class="lp-btn-secondary">Saiba mais</a>
+        </div>
+      </div>
+      <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+        <div class="lp-mockup">
+          <div class="lp-mockup-card">
+            <div class="lp-mockup-row">
+              <div class="lp-mockup-dot green"></div>
+              <div class="lp-mockup-line"></div>
+            </div>
+            <div class="lp-mockup-row">
+              <div class="lp-mockup-dot red"></div>
+              <div class="lp-mockup-line" style="flex:.6"></div>
+            </div>
+            <div class="lp-mockup-row">
+              <div class="lp-mockup-dot accent"></div>
+              <div class="lp-mockup-line"></div>
+            </div>
+          </div>
+          <div class="lp-mockup-stats">
+            <div class="lp-mockup-metric">
+              <span class="lp-mockup-label">Saldo</span>
+              <span class="lp-mockup-value text-pf-accent">R$ 8.420</span>
+            </div>
+            <div class="lp-mockup-metric">
+              <span class="lp-mockup-label">Receitas</span>
+              <span class="lp-mockup-value text-pf-green">R$ 6.800</span>
+            </div>
+            <div class="lp-mockup-metric">
+              <span class="lp-mockup-label">Despesas</span>
+              <span class="lp-mockup-value text-pf-red">R$ 4.130</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features -->
+<div id="features" class="lp-features">
+  <div class="container">
+    <h2 class="lp-section-title">Funcionalidades</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="lp-feature-card">
+          <div class="lp-feature-icon"><i class="bi bi-grid"></i></div>
+          <h3>Dashboard</h3>
+          <p>Visualize seu saldo, receitas e despesas com gráficos e indicadores visuais em tempo real.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="lp-feature-card">
+          <div class="lp-feature-icon"><i class="bi bi-list-ul"></i></div>
+          <h3>Transações</h3>
+          <p>Registre receitas, despesas e transferências com categoria, conta e data.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="lp-feature-card">
+          <div class="lp-feature-icon"><i class="bi bi-bullseye"></i></div>
+          <h3>Orçamentos</h3>
+          <p>Defina limites mensais por categoria e acompanhe o progresso com barras visuais.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="lp-feature-card">
+          <div class="lp-feature-icon"><i class="bi bi-building"></i></div>
+          <h3>Contas</h3>
+          <p>Gerencie múltiplas contas bancárias e cartões com saldo atualizado automaticamente.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="lp-feature-card">
+          <div class="lp-feature-icon"><i class="bi bi-tags"></i></div>
+          <h3>Categorias</h3>
+          <p>Organize com categorias personalizáveis, ícones e cores para fácil identificação.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="lp-feature-card">
+          <div class="lp-feature-icon"><i class="bi bi-bar-chart"></i></div>
+          <h3>Relatórios</h3>
+          <p>Acompanhe resumos mensais e gastos por categoria com períodos configuráveis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="lp-cta">
+  <div class="container">
+    <h2>Comece agora — é grátis</h2>
+    <p>Crie sua conta e tenha controle total das suas finanças em poucos minutos.</p>
+    <a href="#login" class="lp-btn-primary">Criar minha conta <i class="bi bi-arrow-right"></i></a>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="lp-footer">
+  <div class="container">
+    <span class="fw-medium"><i class="bi bi-wallet2 me-2"></i>Controle Financeiro</span>
+    <span class="text-secondary">Projeto de estudo — 2025</span>
+  </div>
+</div>
+
+</body>
+</html>

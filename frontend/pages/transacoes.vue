@@ -1,121 +1,76 @@
 <template>
   <div>
+    <!-- Header -->
+    <div class="pf-page-header">
+      <v-icon icon="mdi-swap-horizontal" size="20" color="primary" />
+      <h5>Transações</h5>
+    </div>
+
     <!-- Filtros -->
-    <v-card rounded="lg" class="mb-4" variant="flat">
-      <v-card-text>
-        <v-row align="center">
-          <v-col cols="12" sm="4">
-            <v-text-field
-              v-model="filtro.busca"
-              label="Buscar"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              hide-details
-              @update:model-value="aplicarFiltro"
-            />
-          </v-col>
-          <v-col cols="6" sm="2">
-            <v-select
-              v-model="filtro.tipo"
-              label="Tipo"
-              :items="['Todos', 'Receita', 'Despesa', 'Transferencia']"
-              hide-details
-              clearable
-              @update:model-value="aplicarFiltro"
-            />
-          </v-col>
-          <v-col cols="6" sm="2">
-            <v-select
-              v-model="filtro.categoriaId"
-              label="Categoria"
-              :items="categorias"
-              item-title="nome"
-              item-value="id"
-              hide-details
-              clearable
-              @update:model-value="aplicarFiltro"
-            />
-          </v-col>
-          <v-col cols="6" sm="2">
-            <v-text-field
-              v-model="filtro.dataInicio"
-              label="De"
-              type="date"
-              hide-details
-              @update:model-value="aplicarFiltro"
-            />
-          </v-col>
-          <v-col cols="6" sm="2">
-            <v-text-field
-              v-model="filtro.dataFim"
-              label="Até"
-              type="date"
-              hide-details
-              @update:model-value="aplicarFiltro"
-            />
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+    <div class="pf-filter-bar">
+      <v-text-field
+        v-model="filtro.busca"
+        placeholder="Buscar transação..."
+        prepend-inner-icon="mdi-magnify"
+        clearable
+        hide-details
+        density="compact"
+        variant="outlined"
+        class="pf-filter-input"
+        @update:model-value="aplicarFiltro"
+      />
+      <v-select
+        v-model="filtro.tipo"
+        :items="tiposFiltro"
+        hide-details
+        clearable
+        density="compact"
+        variant="outlined"
+        style="max-width:160px"
+        @update:model-value="aplicarFiltro"
+      />
+      <v-text-field
+        v-model="filtroMes"
+        label="Mês"
+        type="month"
+        hide-details
+        density="compact"
+        variant="outlined"
+        style="max-width:160px"
+        @update:model-value="aplicarFiltro"
+      />
+    </div>
 
-    <!-- Tabela -->
-    <v-card rounded="lg">
-      <v-card-title class="d-flex align-center justify-space-between pa-5">
-        <span class="font-weight-semibold">Transações <v-chip size="small" class="ml-2">{{ transacoes.length }}</v-chip></span>
-        <v-btn color="primary" prepend-icon="mdi-plus" @click="abrirDialog()">
-          Nova transação
-        </v-btn>
-      </v-card-title>
+    <!-- Botão nova transação -->
+    <v-btn color="primary" prepend-icon="mdi-plus" @click="abrirDialog()" class="mb-4">
+      Nova transação
+    </v-btn>
 
-      <v-data-table
-        :headers="headers"
-        :items="transacoes"
-        :loading="loading"
-        item-value="id"
-        hover
-      >
-        <template #item.tipo="{ item }">
-          <v-chip
-            :color="item.tipo === 'Receita' ? 'success' : item.tipo === 'Despesa' ? 'error' : 'info'"
-            size="small"
-            variant="tonal"
-          >
-            {{ item.tipo }}
-          </v-chip>
-        </template>
-
-        <template #item.valor="{ item }">
-          <span :class="item.tipo === 'Receita' ? 'text-success' : 'text-error'" class="font-weight-semibold">
-            {{ item.tipo === 'Receita' ? '+' : '-' }} {{ formatarValor(item.valor) }}
+    <!-- Lista de transações -->
+    <div class="pf-card">
+      <div v-if="transacoes.length === 0" class="text-center text-medium-emphasis py-6">
+        Nenhuma transação encontrada
+      </div>
+      <div v-for="t in transacoesFiltradas" :key="t.id" class="pf-row">
+        <div class="pf-dot" :class="t.tipo === 'Receita' ? 'green' : 'red'">
+          <v-icon :icon="t.tipo === 'Receita' ? 'mdi-arrow-down' : 'mdi-arrow-up'" size="16" />
+        </div>
+        <div class="pf-row-info">
+          <div class="pf-row-title">{{ t.descricao }}</div>
+          <div class="pf-row-sub">{{ formatarDataCurta(t.data) }} · {{ t.categoria?.nome ?? '—' }}</div>
+        </div>
+        <div class="d-flex align-center ga-2">
+          <span class="pf-badge" :class="t.tipo === 'Receita' ? 'green' : 'red'">
+            {{ t.tipo === 'Receita' ? 'Receita' : 'Despesa' }}
           </span>
-        </template>
-
-        <template #item.data="{ item }">
-          {{ formatarData(item.data) }}
-        </template>
-
-        <template #item.categoria="{ item }">
-          <v-chip v-if="item.categoria" size="small" :color="item.categoria.cor" variant="tonal">
-            {{ item.categoria.nome }}
-          </v-chip>
-        </template>
-
-        <template #item.status="{ item }">
-          <v-chip
-            :color="item.status === 'Confirmada' ? 'success' : item.status === 'Pendente' ? 'warning' : 'error'"
-            size="small"
-            variant="tonal"
-          >
-            {{ item.status }}
-          </v-chip>
-        </template>
-
-        <template #item.actions="{ item }">
-          <v-btn icon="mdi-pencil" size="small" variant="text" @click="abrirDialog(item)" />
-          <v-btn icon="mdi-delete" size="small" variant="text" color="error" @click="confirmarExclusao(item)" />
-        </template>
-      </v-data-table>
-    </v-card>
+          <div class="pf-row-val" :class="t.tipo === 'Receita' ? 'text-pf-green' : 'text-pf-red'">
+            {{ t.tipo === 'Receita' ? '+' : '-' }} R$ {{ formatarValor(t.valor) }}
+          </div>
+          <v-btn icon="mdi-pencil" size="x-small" variant="text" @click.stop="abrirDialog(t)" />
+          <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click.stop="confirmarExclusao(t)" />
+        </div>
+      </div>
+    </div>
 
     <!-- Dialog criar/editar -->
     <TransacaoDialog
@@ -129,12 +84,12 @@
     <!-- Dialog confirmar exclusão -->
     <v-dialog v-model="dialogExclusao" max-width="400">
       <v-card rounded="lg">
-        <v-card-title>Confirmar exclusão</v-card-title>
-        <v-card-text>
+        <v-card-title class="pa-6 pb-2">Confirmar exclusão</v-card-title>
+        <v-card-text class="pa-6 pt-3">
           Tem certeza que deseja excluir a transação
           <strong>{{ transacaoSelecionada?.descricao }}</strong>?
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-6 pt-0">
           <v-spacer />
           <v-btn variant="text" @click="dialogExclusao = false">Cancelar</v-btn>
           <v-btn color="error" variant="flat" :loading="loading" @click="excluir">Excluir</v-btn>
@@ -167,23 +122,19 @@ const filtro = reactive<FiltroTransacao>({
   dataFim: undefined,
 })
 
-const headers = [
-  { title: 'Data', key: 'data', sortable: true },
-  { title: 'Descrição', key: 'descricao' },
-  { title: 'Categoria', key: 'categoria', sortable: false },
-  { title: 'Conta', key: 'conta.nome', sortable: false },
-  { title: 'Tipo', key: 'tipo' },
-  { title: 'Valor', key: 'valor', sortable: true },
-  { title: 'Status', key: 'status' },
-  { title: '', key: 'actions', sortable: false, align: 'end' },
-]
+const filtroMes = ref(new Date().toISOString().slice(0, 7))
+
+const tiposFiltro = ['Todos', 'Receita', 'Despesa', 'Transferencia']
+
+const transacoesFiltradas = computed(() => transacoes.value)
 
 function formatarValor(v: number) {
-  return `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
 }
 
-function formatarData(d: string) {
-  return new Date(d).toLocaleDateString('pt-BR')
+function formatarDataCurta(d: string) {
+  const dt = new Date(d)
+  return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`
 }
 
 function abrirDialog(transacao?: Transacao) {
@@ -207,6 +158,16 @@ function onSalvo(t: Transacao) {
 }
 
 function aplicarFiltro() {
+  const mes = filtroMes.value
+  if (mes) {
+    filtro.dataInicio = `${mes}-01`
+    const [ano, m] = mes.split('-')
+    const ultimoDia = new Date(parseInt(ano), parseInt(m), 0).getDate()
+    filtro.dataFim = `${mes}-${String(ultimoDia).padStart(2, '0')}`
+  } else {
+    filtro.dataInicio = undefined
+    filtro.dataFim = undefined
+  }
   store.buscar({
     ...filtro,
     tipo: filtro.tipo === 'Todos' ? undefined : filtro.tipo,
@@ -214,8 +175,8 @@ function aplicarFiltro() {
 }
 
 onMounted(async () => {
+  aplicarFiltro()
   await Promise.all([
-    store.buscar(),
     buscarContas(),
     buscarCategorias(),
   ])
